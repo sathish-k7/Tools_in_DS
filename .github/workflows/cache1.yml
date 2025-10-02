@@ -1,7 +1,7 @@
 name: Cache Example Workflow
 
 on:
-  workflow_dispatch: # manual trigger
+  workflow_dispatch: # allow manual trigger
   push:              # run on push
 
 jobs:
