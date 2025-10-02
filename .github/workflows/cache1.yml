@@ -1,0 +1,22 @@
+name: Cache Example Workflow
+
+on:
+  workflow_dispatch: # manual trigger
+  push:              # run on push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: prime-cache-83bdbc7
+        id: cache-deps
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: cache-83bdbc7
+
+      - name: Show cache result
+        run: echo "Cache hit result: ${{ steps.cache-deps.outputs.cache-hit }}"
