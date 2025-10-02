@@ -1,0 +1,13 @@
+name: Test Action with Email Step
+
+on:
+  workflow_dispatch: # allows manual triggering
+  push:              # also runs on push to repo
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 24f1000011@ds.study.iitm.ac.in
+        run: echo "Hello, world! This is a test action."
+
