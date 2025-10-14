@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anatomy Quiz App</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .quiz-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .quiz-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .quiz-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .quiz-content {
+            padding: 40px;
+        }
+
+        .question-container {
+            margin-bottom: 30px;
+        }
+
+        .question {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .options {
+            list-style: none;
+        }
+
+        .option {
+            margin-bottom: 12px;
+        }
+
+        .option label {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .option label:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+
+        .option input[type="radio"] {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+
+        .option label.correct {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .option label.incorrect {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .quiz-controls {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin: 0 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+
+        .score-display {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .quiz-complete {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .quiz-complete h2 {
+            color: #667eea;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .final-score {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <h1>🧠 Anatomy Quiz</h1>
+            <p>Test your knowledge of human anatomy</p>
+        </div>
+        
+        <div class="quiz-content">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <div class="score-display">
+                <span id="scoreDisplay">Score: 0/0</span>
+            </div>
+
+            <div id="quizArea">
+                <!-- Questions will be loaded here -->
+            </div>
+
+            <div class="quiz-controls">
+                <button class="btn" id="prevBtn" onclick="previousQuestion()" disabled>Previous</button>
+                <button class="btn" id="nextBtn" onclick="nextQuestion()">Next</button>
+                <button class="btn" id="submitBtn" onclick="submitQuiz()" style="display: none;">Submit Quiz</button>
+                <button class="btn" id="restartBtn" onclick="restartQuiz()" style="display: none;">Restart Quiz</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "What is the functional unit of the kidney?",
+                options: ["Nephron", "Neuron", "Alveolus", "Sarcomere", "Osteon"],
+                correct: 0
+            },
+            {
+                question: "What is the functional unit of the nervous system?",
+                options: ["Nephron", "Neuron", "Hepatocyte", "Osteocyte", "Myocyte"],
+                correct: 1
+            },
+            {
+                question: "What is the functional unit of the lungs?",
+                options: ["Bronchus", "Bronchiole", "Alveolus", "Trachea", "Pleura"],
+                correct: 2
+            },
+            {
+                question: "What is the functional unit of muscle contraction?",
+                options: ["Myofibril", "Sarcomere", "Actin", "Myosin", "Tropomyosin"],
+                correct: 1
+            },
+            {
+                question: "What is the functional unit of compact bone?",
+                options: ["Osteocyte", "Osteon", "Osteoblast", "Osteoclast", "Periosteum"],
+                correct: 1
+            },
+            {
+                question: "What is the functional unit of the liver?",
+                options: ["Hepatocyte", "Lobule", "Sinusoid", "Kupffer cell", "Bile duct"],
+                correct: 1
+            },
+            {
+                question: "What is the smallest functional unit of the heart?",
+                options: ["Cardiomyocyte", "Intercalated disc", "Purkinje fiber", "SA node", "Myocardium"],
+                correct: 0
+            },
+            {
+                question: "What is the functional unit of the cerebral cortex?",
+                options: ["Neuron", "Glial cell", "Cortical column", "Synapse", "Dendrite"],
+                correct: 2
+            },
+            {
+                question: "What is the functional unit of the small intestine for absorption?",
+                options: ["Crypt", "Villus", "Microvilli", "Enterocyte", "Goblet cell"],
+                correct: 1
+            },
+            {
+                question: "What is the functional unit of vision in the retina?",
+                options: ["Rod", "Cone", "Photoreceptor", "Ganglion cell", "Bipolar cell"],
+                correct: 2
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = new Array(questions.length).fill(false);
+        let userAnswers = new Array(questions.length).fill(-1);
+
+        function loadQuestion() {
+            const question = questions[currentQuestion];
+            const quizArea = document.getElementById('quizArea');
+            
+            quizArea.innerHTML = `
+                <div class="question-container">
+                    <div class="question">
+                        Question ${currentQuestion + 1} of ${questions.length}: ${question.question}
+                    </div>
+                    <ul class="options">
+                        ${question.options.map((option, index) => `
+                            <li class="option">
+                                <label for="option${index}" ${answered[currentQuestion] ? (index === question.correct ? 'class="correct"' : (index === userAnswers[currentQuestion] ? 'class="incorrect"' : '')) : ''}>
+                                    <input type="radio" id="option${index}" name="answer" value="${index}" 
+                                           ${userAnswers[currentQuestion] === index ? 'checked' : ''}
+                                           ${answered[currentQuestion] ? 'disabled' : ''}
+                                           onchange="selectAnswer(${index})">
+                                    ${option}
+                                </label>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `;
+
+            updateProgress();
+            updateScore();
+            updateButtons();
+        }
+
+        function selectAnswer(selectedIndex) {
+            if (answered[currentQuestion]) return;
+            
+            userAnswers[currentQuestion] = selectedIndex;
+            answered[currentQuestion] = true;
+            
+            if (selectedIndex === questions[currentQuestion].correct) {
+                score++;
+            }
+            
+            // Show correct/incorrect styling
+            setTimeout(() => {
+                loadQuestion();
+            }, 500);
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                loadQuestion();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                loadQuestion();
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function updateScore() {
+            const answeredCount = answered.filter(a => a).length;
+            document.getElementById('scoreDisplay').textContent = `Score: ${score}/${answeredCount} (${answeredCount}/${questions.length} answered)`;
+        }
+
+        function updateButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            prevBtn.disabled = currentQuestion === 0;
+            
+            if (currentQuestion === questions.length - 1) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'inline-block';
+            } else {
+                nextBtn.style.display = 'inline-block';
+                submitBtn.style.display = 'none';
+            }
+        }
+
+        function submitQuiz() {
+            const unanswered = answered.filter(a => !a).length;
+            if (unanswered > 0) {
+                if (!confirm(`You have ${unanswered} unanswered questions. Submit anyway?`)) {
+                    return;
+                }
+            }
+            
+            showResults();
+        }
+
+        function showResults() {
+            const percentage = Math.round((score / questions.length) * 100);
+            let grade = '';
+            
+            if (percentage >= 90) grade = 'Excellent! 🏆';
+            else if (percentage >= 80) grade = 'Great job! 🌟';
+            else if (percentage >= 70) grade = 'Good work! 👍';
+            else if (percentage >= 60) grade = 'Not bad! 📚';
+            else grade = 'Keep studying! 💪';
+            
+            document.getElementById('quizArea').innerHTML = `
+                <div class="quiz-complete">
+                    <h2>Quiz Complete!</h2>
+                    <div class="final-score">
+                        <div style="font-size: 2rem; margin-bottom: 10px;">${score}/${questions.length}</div>
+                        <div style="font-size: 1.3rem; color: #667eea;">${percentage}%</div>
+                        <div style="font-size: 1.1rem; margin-top: 10px;">${grade}</div>
+                    </div>
+                    <div style="text-align: left; margin-top: 20px;">
+                        <h3>Review:</h3>
+                        ${questions.map((q, index) => `
+                            <div style="margin: 10px 0; padding: 10px; background: ${userAnswers[index] === q.correct ? '#d4edda' : '#f8d7da'}; border-radius: 5px;">
+                                <strong>Q${index + 1}:</strong> ${q.question}<br>
+                                <strong>Your answer:</strong> ${userAnswers[index] !== -1 ? q.options[userAnswers[index]] : 'Not answered'}<br>
+                                <strong>Correct answer:</strong> ${q.options[q.correct]}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('submitBtn').style.display = 'none';
+            document.getElementById('restartBtn').style.display = 'inline-block';
+            document.getElementById('prevBtn').style.display = 'none';
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            answered = new Array(questions.length).fill(false);
+            userAnswers = new Array(questions.length).fill(-1);
+            
+            document.getElementById('restartBtn').style.display = 'none';
+            document.getElementById('prevBtn').style.display = 'inline-block';
+            
+            loadQuestion();
+        }
+
+        // Initialize quiz
+        loadQuestion();
+    </script>
+</body>
+</html>

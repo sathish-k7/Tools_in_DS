@@ -1,0 +1,23 @@
+Write a JavaScript function body that fetches the creation date of a GitHub user's first repository using the GitHub API. 
+
+Requirements:
+- Use the existing variable "user" (don't declare it)
+- Use fetch() to call the GitHub API
+- Return the created_at date of the first repository
+- Handle the async/await pattern
+- Include basic error handling
+- Return only the function body (no function declaration)
+- Use proper JSON parsing
+
+The GitHub API endpoint format is: https://api.github.com/users/{username}/repos
+
+Example expected output format:
+```javascript
+try {
+  const response = await fetch(`https://api.github.com/users/${user}/repos`);
+  const data = await response.json();
+  return data[0].created_at;
+} catch (error) {
+  throw error;
+}
+```
