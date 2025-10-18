@@ -1,4 +1,6 @@
 numpy
 pandas
 fastapi
-uvicorn[standard]
+uvicorn
+scikit-learn
+pydantic

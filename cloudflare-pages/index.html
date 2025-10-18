@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypeScript RAG API - TechDocs Inc.</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .query-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .query-box input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .query-box button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .query-box button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .result-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            display: none;
+        }
+        
+        .result-box.show {
+            display: block;
+        }
+        
+        .result-box.error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .result-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .result-box.error h3 {
+            color: #dc3545;
+        }
+        
+        .answer {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .metadata {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 10px;
+        }
+        
+        .examples {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .example-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .example-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .example-q {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .example-a {
+            color: #28a745;
+            font-style: italic;
+        }
+        
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 TypeScript RAG API</h1>
+            <p>Retrieval Augmented Generation for TypeScript Documentation</p>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <h2>🔍 Try the API</h2>
+                <div class="query-box">
+                    <input 
+                        type="text" 
+                        id="queryInput" 
+                        placeholder="Ask a question about TypeScript..."
+                        value="What does the author affectionately call the => syntax?"
+                    >
+                    <button onclick="searchAPI()">
+                        Search
+                        <span id="spinner" class="spinner hidden"></span>
+                    </button>
+                </div>
+                
+                <div id="resultBox" class="result-box">
+                    <h3>Answer:</h3>
+                    <div class="answer" id="answer"></div>
+                    <div class="metadata">
+                        <strong>Source:</strong> <span id="source"></span><br>
+                        <strong>Confidence:</strong> <span id="confidence"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>📝 Example Questions</h2>
+                <div class="examples">
+                    <div class="example-item" onclick="fillQuery('What does the author affectionately call the => syntax?')">
+                        <div class="example-q">Q: What does the author affectionately call the => syntax?</div>
+                        <div class="example-a">A: fat arrow</div>
+                    </div>
+                    <div class="example-item" onclick="fillQuery('Which operator converts any value into an explicit boolean?')">
+                        <div class="example-q">Q: Which operator converts any value into an explicit boolean?</div>
+                        <div class="example-a">A: !!</div>
+                    </div>
+                    <div class="example-item" onclick="fillQuery('What are arrow functions also called?')">
+                        <div class="example-q">Q: What are arrow functions also called?</div>
+                        <div class="example-a">A: fat arrow or lambda functions</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>🚀 API Endpoints</h2>
+                <p><strong>Local Development:</strong></p>
+                <div class="code-block">GET http://127.0.0.1:8000/search?q=your_question</div>
+                
+                <p style="margin-top: 15px;"><strong>Production (Cloudflare Pages):</strong></p>
+                <div class="code-block">GET https://tdsfu.pages.dev/api/GA3/8?q=your_question</div>
+                
+                <p style="margin-top: 15px;"><strong>Response Format:</strong></p>
+                <div class="code-block">{
+  "answer": "string containing the relevant documentation excerpt",
+  "sources": "TypeScript Deep Dive by Basarat Ali Syed",
+  "confidence": 0.850
+}</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Detect if running locally or on Cloudflare Pages
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://127.0.0.1:8000/search'
+            : '/api/GA3/8';
+        
+        function fillQuery(question) {
+            document.getElementById('queryInput').value = question;
+            searchAPI();
+        }
+        
+        async function searchAPI() {
+            const query = document.getElementById('queryInput').value.trim();
+            const resultBox = document.getElementById('resultBox');
+            const spinner = document.getElementById('spinner');
+            
+            if (!query) {
+                alert('Please enter a question');
+                return;
+            }
+            
+            // Show spinner
+            spinner.classList.remove('hidden');
+            resultBox.classList.remove('show', 'error');
+            
+            try {
+                const url = `${API_URL}?q=${encodeURIComponent(query)}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('answer').textContent = data.answer;
+                    document.getElementById('source').textContent = data.sources || 'TypeScript Documentation';
+                    document.getElementById('confidence').textContent = data.confidence || 'N/A';
+                    resultBox.classList.add('show');
+                } else {
+                    document.getElementById('answer').textContent = data.error || 'An error occurred';
+                    resultBox.classList.add('show', 'error');
+                }
+            } catch (error) {
+                document.getElementById('answer').textContent = `Error: ${error.message}. Make sure the API server is running.`;
+                resultBox.classList.add('show', 'error');
+            } finally {
+                spinner.classList.add('hidden');
+            }
+        }
+        
+        // Allow Enter key to search
+        document.getElementById('queryInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchAPI();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ Your API is LIVE!</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            color: #4caf50;
+            text-align: center;
+            font-size: 2.5rem;
+        }
+        .url-box {
+            background: #f8f9fa;
+            border: 3px solid #4caf50;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .url {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            color: #667eea;
+            word-break: break-all;
+        }
+        .test-section {
+            background: #e8f5e9;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .test-section h3 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 10px 5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .result {
+            background: #1e1e1e;
+            color: #4caf50;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .hidden {
+            display: none;
+        }
+        .badge {
+            display: inline-block;
+            background: #4caf50;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎉 Your API is LIVE!</h1>
+        
+        <div class="url-box">
+            <h2 style="color: #667eea; margin-bottom: 10px;">Your Public Endpoint URL</h2>
+            <div class="url">https://da124568.typescript-rag.pages.dev/api/GA3/8</div>
+            <button onclick="copyURL()" style="margin-top: 15px;">📋 Copy URL</button>
+        </div>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <span class="badge">✅ Deployed</span>
+            <span class="badge">✅ CORS Enabled</span>
+            <span class="badge">✅ HTTPS</span>
+            <span class="badge">✅ Global CDN</span>
+        </div>
+        
+        <div class="test-section">
+            <h3>🧪 Test Your API</h3>
+            <button onclick="testQuestion1()">Test Question 1: Arrow Syntax</button>
+            <button onclick="testQuestion2()">Test Question 2: Boolean Operator</button>
+            <button onclick="testCustom()">Custom Query</button>
+            
+            <div id="customInput" class="hidden" style="margin-top: 15px;">
+                <input type="text" id="customQuery" placeholder="Enter your question..." 
+                       style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 5px; font-size: 1rem;">
+                <button onclick="runCustomQuery()" style="margin-top: 10px;">Search</button>
+            </div>
+            
+            <div id="result" class="result hidden"></div>
+        </div>
+        
+        <div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 10px; padding: 20px; margin-top: 20px;">
+            <h3 style="color: #856404; margin-top: 0;">📋 For Assignment Submission</h3>
+            <p style="color: #856404; margin: 10px 0;">Copy and paste this URL:</p>
+            <div style="background: white; padding: 10px; border-radius: 5px; font-family: 'Courier New', monospace; color: #667eea;">
+                https://da124568.typescript-rag.pages.dev/api/GA3/8
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = 'https://da124568.typescript-rag.pages.dev/api/GA3/8';
+        
+        function copyURL() {
+            navigator.clipboard.writeText(API_URL);
+            alert('✅ URL copied to clipboard!');
+        }
+        
+        async function testAPI(question) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.classList.remove('hidden');
+            resultDiv.textContent = '⏳ Loading...';
+            
+            try {
+                const response = await fetch(`${API_URL}?q=${encodeURIComponent(question)}`);
+                const data = await response.json();
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        function testQuestion1() {
+            testAPI('What does the author affectionately call the => syntax?');
+        }
+        
+        function testQuestion2() {
+            testAPI('Which operator converts any value into an explicit boolean?');
+        }
+        
+        function testCustom() {
+            const customInput = document.getElementById('customInput');
+            customInput.classList.toggle('hidden');
+        }
+        
+        function runCustomQuery() {
+            const query = document.getElementById('customQuery').value;
+            if (query.trim()) {
+                testAPI(query);
+            } else {
+                alert('Please enter a question');
+            }
+        }
+    </script>
+</body>
+</html>

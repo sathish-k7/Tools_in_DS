@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypeScript RAG API Tester</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #4ec9b0;
+            text-align: center;
+        }
+        .test-section {
+            background: #252526;
+            border: 1px solid #3e3e42;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .test-section h2 {
+            color: #569cd6;
+            margin-top: 0;
+        }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-family: inherit;
+        }
+        button:hover {
+            background: #1177bb;
+        }
+        .result {
+            background: #1e1e1e;
+            border: 1px solid #3e3e42;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-size: 14px;
+        }
+        .success { border-left: 4px solid #4ec9b0; }
+        .error { border-left: 4px solid #f48771; }
+        .info { border-left: 4px solid #569cd6; }
+        .question {
+            color: #ce9178;
+            margin: 10px 0;
+        }
+        .answer {
+            color: #4ec9b0;
+            font-weight: bold;
+        }
+        .loading {
+            color: #569cd6;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 TypeScript RAG API Tester</h1>
+    
+    <div class="test-section">
+        <h2>📡 API Configuration</h2>
+        <label>
+            <input type="radio" name="api" value="local" checked> Local (http://127.0.0.1:8000)
+        </label>
+        <label>
+            <input type="radio" name="api" value="prod"> Production (https://tdsfu.pages.dev)
+        </label>
+        <div id="apiUrl" class="result info" style="margin-top: 10px;"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎯 Example Questions</h2>
+        <button onclick="testQuestion('What does the author affectionately call the => syntax?', 'fat arrow')">
+            Test Question 1
+        </button>
+        <button onclick="testQuestion('Which operator converts any value into an explicit boolean?', '!!')">
+            Test Question 2
+        </button>
+        <button onclick="testQuestion('What are arrow functions also called?', 'fat arrow')">
+            Test Question 3
+        </button>
+        <button onclick="runAllTests()">Run All Tests</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔍 Custom Query</h2>
+        <input type="text" id="customQuery" placeholder="Enter your question..." style="width: 100%; padding: 10px; background: #1e1e1e; border: 1px solid #3e3e42; color: #d4d4d4; border-radius: 4px;">
+        <button onclick="testCustomQuery()" style="margin-top: 10px;">Search</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 Test Results</h2>
+        <div id="results"></div>
+    </div>
+    
+    <script>
+        const APIs = {
+            local: 'http://127.0.0.1:8000/search',
+            prod: 'https://tdsfu.pages.dev/api/GA3/8'
+        };
+        
+        let testCount = 0;
+        
+        function getSelectedAPI() {
+            const selected = document.querySelector('input[name="api"]:checked').value;
+            return APIs[selected];
+        }
+        
+        function updateAPIDisplay() {
+            const url = getSelectedAPI();
+            document.getElementById('apiUrl').textContent = `Current API: ${url}`;
+        }
+        
+        document.querySelectorAll('input[name="api"]').forEach(radio => {
+            radio.addEventListener('change', updateAPIDisplay);
+        });
+        
+        updateAPIDisplay();
+        
+        async function testQuestion(question, expectedAnswer) {
+            testCount++;
+            const resultsDiv = document.getElementById('results');
+            const testId = `test-${testCount}`;
+            
+            // Create result container
+            const resultDiv = document.createElement('div');
+            resultDiv.id = testId;
+            resultDiv.className = 'result info';
+            resultDiv.innerHTML = `
+                <div class="question">Q: ${question}</div>
+                <div class="loading">⏳ Testing...</div>
+            `;
+            resultsDiv.insertBefore(resultDiv, resultsDiv.firstChild);
+            
+            try {
+                const apiUrl = getSelectedAPI();
+                const startTime = Date.now();
+                
+                const response = await fetch(`${apiUrl}?q=${encodeURIComponent(question)}`);
+                const data = await response.json();
+                const elapsed = Date.now() - startTime;
+                
+                if (response.ok) {
+                    const answer = data.answer;
+                    const matchFound = answer.toLowerCase().includes(expectedAnswer.toLowerCase());
+                    
+                    resultDiv.className = matchFound ? 'result success' : 'result error';
+                    resultDiv.innerHTML = `
+                        <div class="question">Q: ${question}</div>
+                        <div class="answer">A: ${answer}</div>
+                        <div style="margin-top: 10px; color: #808080;">
+                            Expected: ${expectedAnswer}<br>
+                            Match: ${matchFound ? '✅ PASS' : '❌ FAIL'}<br>
+                            Response Time: ${elapsed}ms<br>
+                            Confidence: ${data.confidence || 'N/A'}<br>
+                            Source: ${data.sources || 'N/A'}
+                        </div>
+                    `;
+                    
+                    return matchFound;
+                } else {
+                    throw new Error(data.error || 'API request failed');
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <div class="question">Q: ${question}</div>
+                    <div style="color: #f48771;">❌ ERROR: ${error.message}</div>
+                    <div style="margin-top: 10px; color: #808080;">
+                        Make sure the API server is running!<br>
+                        For local testing: python typescript_rag_api.py
+                    </div>
+                `;
+                return false;
+            }
+        }
+        
+        async function testCustomQuery() {
+            const query = document.getElementById('customQuery').value.trim();
+            if (!query) {
+                alert('Please enter a question');
+                return;
+            }
+            await testQuestion(query, ''); // No expected answer for custom queries
+        }
+        
+        async function runAllTests() {
+            const questions = [
+                { q: 'What does the author affectionately call the => syntax?', a: 'fat arrow' },
+                { q: 'Which operator converts any value into an explicit boolean?', a: '!!' },
+                { q: 'What are arrow functions also called?', a: 'fat arrow' }
+            ];
+            
+            let passed = 0;
+            for (const test of questions) {
+                const result = await testQuestion(test.q, test.a);
+                if (result) passed++;
+                await new Promise(resolve => setTimeout(resolve, 500)); // Delay between tests
+            }
+            
+            alert(`Tests completed: ${passed}/${questions.length} passed`);
+        }
+        
+        // Allow Enter key in custom query
+        document.getElementById('customQuery').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                testCustomQuery();
+            }
+        });
+    </script>
+</body>
+</html>
